@@ -1,0 +1,15 @@
+
+State Machine - |uart|uart_tx:utx|state
+Name state.ST_SEND state.ST_WRITE state.ST_DONE state.ST_IDLE 
+state.ST_IDLE 0 0 0 0 
+state.ST_DONE 0 0 1 1 
+state.ST_WRITE 0 1 0 1 
+state.ST_SEND 1 0 0 1 
+
+State Machine - |uart|uart_rx:urx|state
+Name state.ST_BIT2BIT_DONE state.ST_SAMPLE_DONE state.ST_SAMPLE state.ST_BIT2BIT state.ST_IDLE 
+state.ST_IDLE 0 0 0 0 0 
+state.ST_BIT2BIT 0 0 0 1 1 
+state.ST_SAMPLE 0 0 1 0 1 
+state.ST_SAMPLE_DONE 0 1 0 0 1 
+state.ST_BIT2BIT_DONE 1 0 0 0 1 

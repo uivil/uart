@@ -1,0 +1,11 @@
+# Main system clock (50 Mhz)
+create_clock -name "pad_clk_i" -period 20.000ns [get_ports {pad_clk_i}]
+
+create_clock -name "tx_clk" -period 20.000ns [get_ports {tx_clk}]
+create_clock -name "rx_clk" -period 20.000ns [get_ports {rx_clk}]
+
+# Automatically constrain PLL and other generated clocks
+derive_pll_clocks -create_base_clocks
+
+# Automatically calculate clock uncertainty to jitter and other effects.
+derive_clock_uncertainty

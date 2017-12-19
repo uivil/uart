@@ -1,0 +1,61 @@
+`include "defs.v"
+
+
+module uart_tx
+(
+  input[7:0] data_i,
+  input wr_i,
+  input clk_i, rst_n_i,
+  output TxD_o, int_TXC
+);
+
+reg[9:0] tx_r;
+reg[3:0] tx_cnter;
+reg[1:0] state, next;
+
+wire tx_load = (state == ST_WRITE);
+wire tx_shift = (state == ST_SEND);
+
+always @ (posedge clk_i, negedge rst_n_i)
+  if (~rst_n_i) begin
+    tx_r <= 10'h200;
+    tx_cnter <= 'b0;
+  end
+  else if (tx_load) begin
+    tx_r <= {1'b0, data_i, 1'b1};
+    tx_cnter <= 'b0;
+  end 
+  else if (tx_shift) begin
+    tx_r <= {tx_r[8:0], 1'b1};
+    tx_cnter <= tx_cnter + 'b1;
+  end
+
+
+parameter[1:0]  ST_IDLE   = 2'b00,
+                ST_DONE   = 2'b01,
+                ST_WRITE  = 2'b10,
+                ST_SEND   = 2'b11;
+
+always @(negedge clk_i)
+  if (~rst_n_i) state <= ST_IDLE;
+  else          state <= next;
+
+always @* begin
+  next = state;
+  case (state)
+    ST_IDLE: if (wr_i)  next = ST_WRITE;
+    
+    ST_WRITE: next = ST_SEND;
+
+    ST_SEND: if (tx_cnter == 'd9) next = ST_DONE;
+    
+    ST_DONE: if (wr_i) next = ST_WRITE;
+  endcase
+end
+
+
+
+assign int_TXC = (state == ST_DONE);
+assign TxD_o = tx_r[9];
+
+endmodule

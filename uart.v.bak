@@ -1,0 +1,88 @@
+`include "defs.v"
+
+module uart(
+  input rx_i, pad_clk_i, rst_n_i,
+
+  output tx, int_tx, int_rx,
+
+
+  // jtag iface
+  output rdempty_i,
+  output rdfull_i,
+  output wrempty_i,
+  output wrfull_i,
+
+  output rdempty_o,
+  output rdfull_o,
+  output wrempty_o,
+  output wrfull_o,
+
+  output [6:0] HEX0, HEX1, HEX2, HEX3
+);
+
+wire int_rx, int_tx;
+wire TxD;
+wire tx_clk, rx_clk;
+
+SEG7_LUT_4 hd(
+  .iDIG(),
+  .HEX0(HEX0),
+  .HEX1(HEX1),
+  .HEX2(HEX2),
+  .HEX3(HEX3)
+);
+
+wire[7:0] host2jtag_data, jtag2host_data;
+jtag_iface ji(
+  .clk(clk),
+  .data_i(),
+  .wr_i(),
+  .rd_i(),
+  .host2jtag_data(host2jtag_data),
+  .jtag2host_data(jtag2host_data),
+
+  .rdempty_i(rdempty_i),
+  .rdfull_i(rdfull_i),
+  .wrempty_i(wrempty_i),
+  .wrfull_i(wrfull_i),
+  .rdempty_o(rdempty_o),
+  .rdfull_o(rdfull_o),
+  .wrempty_o(wrempty_o),
+  .wrfull_o(wrfull_o)
+);
+
+
+baud_gen tx_gen(
+  .sys_clk_i(clk),
+  .rst_n_i(rst),
+  .baud_modulo_i(15'd31),
+  .baud_clk_o(tx_clk)
+);
+
+baud_gen rx_gen(
+  .sys_clk_i(clk),
+  .rst_n_i(rst),
+  .baud_modulo_i(15'd01),
+  .baud_clk_o(rx_clk)
+);
+
+
+uart_rx urx(
+  .clk_i(rx_clk),
+  .rst_n_i(rst),
+  .RxD_i(TxD),
+  .int_RXC(int_rx)
+);
+
+uart_tx utx(
+  .clk_i(tx_clk),
+  .rst_n_i(rst),
+  .TxD_o(TxD),
+  .int_TXC(int_tx),
+  .data_i(tx_data),
+  .wr_i(tx_wr)
+);
+
+
+
+endmodule
